@@ -1,0 +1,9 @@
+[tools]
+helm = "latest"
+k9s = "latest"
+kubectl = "latest"
+kustomize = "latest"
+node = "22"
+
+[settings]
+lockfile = true

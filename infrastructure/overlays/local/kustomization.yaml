@@ -1,0 +1,15 @@
+resources:
+- ../../base/argocd
+
+
+helmCharts:
+- name: argo-cd
+  includeCRDs: true
+  valuesFile: ../../base/argocd/values.yaml
+  additionalValuesFiles:
+    - ./dev-values.yaml
+  namespace: argocd
+  releaseName: argocd
+  version: 9.0.1
+  repo: https://argoproj.github.io/argo-helm
+

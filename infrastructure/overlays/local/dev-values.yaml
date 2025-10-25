@@ -1,0 +1,8 @@
+global:
+  domain: argocd.local.192.168.195.10.sslip.io
+
+server:
+  ingress:
+    enabled: true
+    #hostname: argocd.local.192.168.195.10.sslip.io
+
