@@ -1,0 +1,4 @@
+resources:
+  - ./operator-crds.yaml
+  - ./tigera-operator.yaml
+  - ./custom-resources.yaml

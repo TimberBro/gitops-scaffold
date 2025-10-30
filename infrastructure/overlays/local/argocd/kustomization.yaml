@@ -1,11 +1,12 @@
 resources:
-- ../../base/argocd
+- ../../../base/argocd
+- ./ingressroute.yaml
 
 
 helmCharts:
 - name: argo-cd
   includeCRDs: true
-  valuesFile: ../../base/argocd/values.yaml
+  valuesFile: ../../../base/argocd/values.yaml
   additionalValuesFiles:
     - ./dev-values.yaml
   namespace: argocd

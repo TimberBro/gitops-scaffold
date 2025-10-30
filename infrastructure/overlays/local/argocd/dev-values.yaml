@@ -1,0 +1,6 @@
+global:
+  domain: argocd.192.168.174.195.sslip.io
+
+server:
+  ingress:
+    enabled: false

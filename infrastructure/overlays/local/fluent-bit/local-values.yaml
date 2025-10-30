@@ -1,0 +1,166 @@
+config:
+  customParsers: |
+    [PARSER]
+      Name        syslog
+      Format      regex
+      Regex       ^\<(?<pri>[0-9]+)\>(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<host>[^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<message>.*)$
+      Time_Key    time
+      Time_Format %b %d %H:%M:%S
+    [PARSER]
+      Format regex
+      Name sys_log_file
+      Regex (?<message>(?<time>[^ ]*\s{1,2}[^ ]*\s[^ ]*)\s(?<host>[a-zA-Z0-9_\/\.\-]*)\s.*)$
+      Time_Format %b %d %H:%M:%S
+      Time_Keep Off
+      Time_Key time
+      Time_Offset +0300
+    [PARSER]
+      Format regex
+      Name java_multiline
+      Regex (?<time>\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2},\d{3}) \[(?<process>\S*)\] (?<loglevel>\w{4,5})\s{1,2}(?<message>.*)
+      Time_Format %Y-%m-%d %H:%M:%S,%L
+      Time_Keep Off
+      Time_Key time
+      Time_Offset +0300
+    [PARSER]
+    # http://rubular.com/r/tjUt3Awgg4
+      Name cri
+      Format regex
+      Regex ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log_processed>.*)$
+      Time_Key    time
+      Time_Format %Y-%m-%dT%H:%M:%S.%L%z
+      Time_Keep   On
+      Time_Offset +0300
+
+    [PARSER]
+      Name   json
+      Format json
+      Time_Key time
+      Time_Format %d/%b/%Y:%H:%M:%S %z
+      Decode_Field_As escaped message
+  filters: |
+    [FILTER]
+      Name                kubernetes
+      Match               local_ep.*
+      Kube_URL            https://kubernetes.default.svc:443
+      Kube_CA_File        /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      Kube_Token_File     /var/run/secrets/kubernetes.io/serviceaccount/token
+      Kube_Tag_Prefix     local_ep.var.log.containers.
+      Merge_Log           On
+      Merge_Log_Key       log_processed
+      Merge_Log_Trim      On
+      K8S-Logging.Parser  Off
+      K8S-Logging.Exclude Off
+      # Labels              On
+    [FILTER]
+      Name    grep
+      Match   local_ep.*
+      Logical_Op or
+      Exclude $kubernetes['namespace_name'] monitoring
+      Exclude $kubernetes['namespace_name'] default
+      Exclude $kubernetes['namespace_name'] kube-system
+      Exclude $kubernetes['namespace_name'] minio-logs
+      Exclude $kubernetes['namespace_name'] minio-test
+      Exclude $kubernetes['namespace_name'] strimzi-operator
+      Exclude $kubernetes['namespace_name'] redis-cluster
+      Exclude $kubernetes['namespace_name'] piraeus-datastore
+
+    [FILTER]
+      Name parser
+      Match local_ep.*
+      Key_Name message
+      Parser json
+      Reserve_Data true
+  inputs: |
+    [INPUT]
+      Name              tail
+      Tag               local_ep.*
+      Path              /var/log/containers/*.log
+      Exclude_Path      /var/log/containers/supabase*.log,/var/log/containers/kminion*.log,/var/log/containers/curl*.log,/var/log/containers/kafka-ui-*.log
+      Parser            cri
+      DB                /var/log/flb-local_ep.db
+      Mem_Buf_Limit     100MB
+      Buffer_Chunk_Size 400k
+      Buffer_Max_Size   20MB
+      Refresh_Interval  10
+  outputs: |
+    [OUTPUT]
+      name            loki
+      match           local_ep.*
+      host            ${FLUENT_LOKI_HOST}
+      port            ${FLUENT_LOKI_PORT}
+      line_format     json
+      labels  job=k8s-local,$log_processed['level'],$log_processed['caller_method_name'],$log_processed['logger_name'],$log_processed['stack_trace'],$kubernetes['container_name'],$kubernetes['namespace_name'],$kubernetes['host'],$pod['pod']
+      auto_kubernetes_labels off
+  service: |
+    [SERVICE]
+      Flush         1
+      Log_Level     info
+      Daemon        off
+      Parsers_File  parsers.conf
+      HTTP_Server   On
+      HTTP_Listen   0.0.0.0
+      HTTP_Port     2020
+dashboards:
+  annotations: {}
+  enabled: true
+  labelKey: grafana_dashboard
+  labelValue: 1
+  namespace: monitoring
+env:
+- name: FLUENT_LOKI_HOST
+  value: loki-gateway.monitoring
+- name: FLUENT_LOKI_PORT
+  value: "80"
+image:
+  pullPolicy: IfNotPresent
+  repository: fluent/fluent-bit
+prometheusRule:
+  additionalLabels: {}
+  enabled: true
+  namespace: ""
+  rules:
+  - alert: NoOutputBytesProcessed
+    annotations:
+      message: |
+        Fluent Bit instance {{ $labels.instance }}'s output plugin {{ $labels.name }} has not processed any
+        bytes for at least 15 minutes.
+      summary: No Output Bytes Processed
+    expr: rate(fluentbit_output_proc_bytes_total[5m]) == 0
+    for: 15m
+    labels:
+      severity: critical
+serviceMonitor:
+  enabled: true
+  interval: 10s
+  metricRelabelings:
+  - action: replace
+    regex: (.*)
+    replacement: ${1}
+    sourceLabels:
+    - __meta_kubernetes_service_label_cluster
+    targetLabel: cluster
+  namespace: monitoring
+  relabelings:
+  - action: replace
+    regex: ^(.*)$
+    replacement: $1
+    separator: ;
+    sourceLabels:
+    - __meta_kubernetes_pod_node_name
+    targetLabel: nodename
+  scheme: ""
+  scrapeTimeout: 10s
+  selector:
+    prometheus: kube-prometheus-stack-prometheus
+  tlsConfig: {}
+
+tolerations:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+    operator: Exists
+  - effect: NoExecute
+    operator: Exists
+  - effect: NoSchedule
+    operator: Exists
+

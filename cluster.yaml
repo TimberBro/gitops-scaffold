@@ -4,6 +4,14 @@ nodes:
 - role: control-plane
 - role: worker
 - role: worker
+  extraPortMappings:
+  - containerPort: 80
+    hostPort: 80
+    # TCP is the default
+    protocol: TCP
+  - containerPort:
+    hostPort: 443
+    protocol: TCP
 networking:
   disableDefaultCNI: true
   podSubnet: 10.233.0.0/16

@@ -1,0 +1,14 @@
+resources:
+- ../../../base/fluent-bit/
+
+helmCharts:
+- name: fluent-bit
+  includeCRDs: true
+  valuesFile: ../../../base/fluent-bit/values.yaml
+  additionalValuesFiles:
+    - ./local-values.yaml
+  namespace: monitoring
+  releaseName: monitoring
+  version: 0.54.0
+  repo: https://fluent.github.io/helm-charts
+
