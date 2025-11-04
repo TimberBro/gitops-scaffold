@@ -4,3 +4,9 @@ global:
 server:
   ingress:
     enabled: false
+
+configs:
+  params:
+    server.insecure: 'true'
+  cm:
+    kustomize.buildOptions: --enable-helm --load-restrictor LoadRestrictionsNone

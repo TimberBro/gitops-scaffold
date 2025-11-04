@@ -1,0 +1,6 @@
+resources:
+ - ./operator-and-crds.yaml
+
+
+namespace: monitoring
+

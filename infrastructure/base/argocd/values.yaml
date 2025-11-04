@@ -418,7 +418,6 @@ configs:
     # You can customize parameters by adding parameters here.
     # (e.g.)
     # otlp.address: ''
-    server.insecure: 'true'
 
   # Argo CD RBAC policy configuration
   ## Ref: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/rbac.md
