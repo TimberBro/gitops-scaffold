@@ -1,0 +1,4 @@
+resources:
+  - ../../../base/vm-operator
+
+namespace: monitoring

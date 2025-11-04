@@ -1,0 +1,17 @@
+resources:
+  - ../../../base/vm-single
+
+namespace: monitoring
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/ingress/class_name
+        value: traefik
+      - op: replace
+        path: /spec/ingress/host
+        value: victoriametrics.192.168.174.195.sslip.io
+    target:
+      group: operator.victoriametrics.com
+      version: v1beta1
+      kind: VMAuth

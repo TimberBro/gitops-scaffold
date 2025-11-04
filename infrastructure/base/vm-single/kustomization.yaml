@@ -1,0 +1,5 @@
+
+resources:
+  - ./vm-single.yaml
+  - ./vm-auth.yaml
+  - ./vm-user.yaml
