@@ -1,0 +1,13 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMServiceScrape
+metadata:
+  name: demo-app
+  namespace: demo-app
+spec:
+  selector:
+    matchLabels:
+      app: demo-app
+  endpoints:
+  - port: metrics
+    interval: 15s
+    path: /metrics
