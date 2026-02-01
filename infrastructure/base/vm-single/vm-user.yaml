@@ -15,6 +15,7 @@ spec:
       paths:
         - "/vmui.*"
         - "/prometheus/.*"
+        - "/api/.*"
     # # vmalert
     # - crd:
     #     kind: VMAlert

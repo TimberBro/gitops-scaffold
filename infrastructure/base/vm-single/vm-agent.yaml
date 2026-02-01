@@ -1,0 +1,8 @@
+apiVersion: operator.victoriametrics.com/v1beta1
+kind: VMAgent
+metadata:
+  name: vm-agent
+spec:
+  selectAllByDefault: true
+  remoteWrite:
+    - url: "http://vmsingle-metric-scrape:8428/api/v1/write"
