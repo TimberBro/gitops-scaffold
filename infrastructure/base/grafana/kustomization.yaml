@@ -1,0 +1,11 @@
+resources:
+  - ./namespace.yaml
+
+helmCharts:
+  - name: grafana
+    includeCRDs: false
+    valuesFile: ./local-values.yaml
+    namespace: grafana
+    releaseName: grafana
+    version: 7.3.9
+    repo: https://grafana.github.io/helm-charts

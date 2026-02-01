@@ -1,0 +1,65 @@
+image:
+  repository: docker.io/openbao/openbao
+  tag: 1.16.0
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+
+ui:
+  enabled: true
+
+server:
+  dev:
+    enabled: true
+
+dataStorage:
+  enabled: false
+
+listener:
+  tcp:
+    address: "[::]:8200"
+    tls_cert_file: "/etc/openbao/tls/tls.crt"
+    tls_key_file: "/etc/openbao/tls/tls.key"
+    tls_client_ca_file: "/etc/openbao/tls/ca.crt"
+
+  telemetry:
+    unauthenticated_metrics_access: false
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+service:
+  enabled: true
+  type: ClusterIP
+  port: 8200
+  targetPort: 8200
+
+serviceAccount:
+  create: true
+  name: openbao
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsUser: 100
+  runAsGroup: 100
+  fsGroup: 100
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 100
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

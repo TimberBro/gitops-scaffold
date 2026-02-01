@@ -1,0 +1,71 @@
+replicas: 1
+
+image:
+  repository: grafana/grafana
+  tag: 10.2.2
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+persistence:
+  enabled: true
+  size: 2Gi
+
+adminUser: admin
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: VictoriaMetrics
+        type: prometheus
+        url: http://vmsingle-metric-scrape:8428
+        access: proxy
+        isDefault: true
+        editable: true
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        updateIntervalSeconds: 10
+        allowUiUpdates: true
+        options:
+          path: /var/lib/grafana/dashboards/default
+
+dashboards:
+  default: {}
+
+env:
+  - name: GF_SECURITY_ADMIN_USER
+    valueFrom:
+      secretKeyRef:
+        name: grafana-admin-credentials
+        key: admin-user
+  - name: GF_SECURITY_ADMIN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: grafana-admin-credentials
+        key: admin-password
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

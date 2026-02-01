@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: openbao-init
+  namespace: openbao
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  template:
+    spec:
+      serviceAccountName: openbao
+      containers:
+      - name: openbao-init
+        image: hashicorp/vault:1.15.0
+        command: ["/bin/sh", "/scripts/init.sh"]
+        volumeMounts:
+        - name: scripts
+          mountPath: /scripts
+          readOnly: true
+      volumes:
+      - name: scripts
+        configMap:
+          name: openbao-init-script
+      restartPolicy: OnFailure

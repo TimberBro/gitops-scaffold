@@ -1,0 +1,17 @@
+resources:
+  - ../../../base/openbao
+  - ./ingressroute.yaml
+  - ./auth-secret.yaml
+  - ./init-script.yaml
+  - ./init-job.yaml
+
+helmCharts:
+  - name: openbao
+    includeCRDs: false
+    valuesFile: ../../../base/openbao/values.yaml
+    additionalValuesFiles:
+      - ./local-values.yaml
+    namespace: openbao
+    releaseName: openbao
+    version: 0.23.5
+    repo: https://openbao.github.io/openbao-helm

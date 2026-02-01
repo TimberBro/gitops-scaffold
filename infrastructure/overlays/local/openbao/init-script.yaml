@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openbao-init-script
+  namespace: openbao
+data:
+  init.sh: |
+    #!/bin/sh
+    set -e
+
+    export VAULT_ADDR="http://127.0.0.1:8200"
+    export VAULT_TOKEN="dev-only-token"
+
+    echo "Waiting for OpenBao to be ready..."
+    while ! vault status > /dev/null 2>&1; do
+      echo "OpenBao not ready yet, waiting..."
+      sleep 2
+    done
+
+    echo "OpenBao is ready. Initializing secrets..."
+
+    # Create ArgoCD secret
+    vault secrets enable -path=argocd kv-v2 || true
+    vault kv put argocd/adminPassword adminPassword="admin"
+
+    # Create Grafana secret
+    vault secrets enable -path=grafana kv-v2 || true
+    vault kv put grafana/credentials admin-user="admin" admin-password="admin"
+
+    echo "Secrets initialized successfully!"

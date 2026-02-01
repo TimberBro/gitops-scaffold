@@ -1,0 +1,17 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: openbao
+  namespace: openbao
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`openbao.192.168.174.195.sslip.io`)
+      priority: 10
+      services:
+        - name: openbao
+          port: 8200
+  tls:
+    certResolver: default

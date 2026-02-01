@@ -9,3 +9,7 @@ resources:
   - ./vm-operator
   - ./vm-single
   - ./demo-app
+  - ./grafana
+  - ./openbao
+  - ./external-secrets-operator
+
